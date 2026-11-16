@@ -1,0 +1,8 @@
+# llvm-sys 构建时要找 llvm-config，靠 LLVM_SYS_140_PREFIX 定位 LLVM 14。
+# 写在这里（项目级）比写 ~/.bashrc 更稳：
+#   - 不依赖 shell 是否交互（Ubuntu 的 ~/.bashrc 开头有 case $- in *i*) ;; *) return;; esac，
+#     非交互 shell（bash -lc、VSCode 任务、CI）source 了也会提前返回，export 不生效）
+#   - rust-analyzer / VSCode 直接 cargo 调用也能拿到
+# 注意：本机还装了 libLLVM-15，不写死这个前缀可能会被误选。
+[env]
+LLVM_SYS_140_PREFIX = "/usr/lib/llvm-14"
