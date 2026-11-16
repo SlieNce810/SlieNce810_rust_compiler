@@ -4,7 +4,7 @@
 //! 逐条折叠出加减乘除指令，最后在主函数里 `ret` 该值。
 
 use crate::parser::Node;
-use llvm_sys::prelude::{LLVMContextRef, LLVMModuleRef, LLVMValueRef};
+use llvm_sys::{core::{LLVMConstReal, LLVMCreateBuilderInContext, LLVMDisposeBuilder, LLVMFloatTypeInContext, LLVMGetFirstBasicBlock, LLVMGetFirstFunction}, prelude::{LLVMContextRef, LLVMModuleRef, LLVMValueRef}};
 
 /// 递归生成表达式对应的 LLVM 值。
 ///
@@ -26,6 +26,28 @@ pub fn generate_llvm_ir(
     context: LLVMContextRef,
 ) -> LLVMValueRef {
     // TODO(lab0): match node { Number / BinaryOp }
-    let _ = (node, module, context);
-    todo!("实现 generate_llvm_ir")
+    match node {
+        Node::Number(value) => unsafe {
+            let float_type = LLVMFloatTypeInContext(context);
+            LLVMConstReal(float_type, (*value) as f64)
+        },
+        Node::BinaryOp { left, operator, right } => unsafe {
+            let left_val = generate_llvm_ir(left, module, context);
+            let right_val = generate_llvm_ir(right, module, context);
+            let builder = LLVMCreateBuilderInContext(context);
+
+            // 获取第一个基本块
+            let first_function = LLVMGetFirstFunction(module);
+            let first_basic_block = LLVMGetFirstBasicBlock(first_function);
+            let result = match *operation {
+                '+' => LLVMBuildFAdd(builder, left_val, right_val, name.as_ptr()),
+                '-' => LLVMBuildFSub(builder, left_val, right_val, name.as_ptr()),
+                '*' => LLVMBuildFMul(builder, left_val, right_val, name.as_ptr()),
+                '/' => LLVMBuildFDiv(builder, left_val, right_val, name.as_ptr()),
+                _ => unreachable!("parser 只会产出这四种运算符"),
+            };
+            LLVMDisposeBuilder(builder);
+            result
+        },
+    }
 }
