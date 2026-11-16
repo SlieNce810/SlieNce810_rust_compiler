@@ -246,9 +246,20 @@ pub fn lex(src: &str) -> LexOutput {
 ///   写成 `match word { "const" => Some(TokenKind::Const), ... _ => None }`
 ///   注意最后要有 `_ => None` 兜底 —— 查不到就是普通标识符。
 fn keyword(word: &str) -> Option<TokenKind> {
-    // TODO(lab1-1): 补完这张关键字表（9 个，见讲义第 6 页）
-    let _ = word;
-    todo!("补完关键字查表：const/int/void/if/else/while/break/continue/return")
+    Some(match word {
+        "const" => TokenKind::Const,
+        "int" => TokenKind::Int,
+        "void" => TokenKind::Void,
+        "if" => TokenKind::If,
+        "else" => TokenKind::Else,
+        "while" => TokenKind::While,
+        "break" => TokenKind::Break,
+        "continue" => TokenKind::Continue,
+        "return" => TokenKind::Return,
+        // 查不到 = 普通标识符。这一条是这个函数存在的全部意义：
+        // `intx` / `iffy` / `returns` 都走到这里，而不是被当成关键字前缀。
+        _ => return None,
+    })
 }
 
 /// 把整数字面量的**源码文本**转换成十进制数值。
@@ -270,9 +281,21 @@ fn keyword(word: &str) -> Option<TokenKind> {
 ///   `i64::from_str_radix(digits, radix)` → `Result<i64, ParseIntError>`
 ///   `str::parse::<i64>()`       → 十进制专用，等价于 from_str_radix(s, 10)
 fn parse_integer(raw: &str) -> i64 {
-    // TODO(lab1-2): 按上面三路判断实现进制转换
-    let _ = raw;
-    todo!("实现 0x / 0 开头 / 十进制 三路解析")
+    // 先定"剥掉什么前缀、按几进制读"，再统一解析一次 —— 三条路各自调一次
+    // from_str_radix 会让错误处理重复三遍，先归一化更清爽。
+    let (digits, radix) = if let Some(hex) = raw.strip_prefix("0x").or_else(|| raw.strip_prefix("0X")) {
+        // 0x1 / 0Xab：剥掉 2 个字符
+        (hex, 16)
+    } else if raw.len() > 1 && raw.starts_with('0') {
+        // 02 / 077 / 00：只剥掉 1 个 '0'（`077` → "77"）
+        // 必须判 len > 1，否则单个 "0" 会剥成空串，八进制解析直接失败
+        (&raw[1..], 8)
+    } else {
+        (raw, 10)
+    };
+
+    i64::from_str_radix(digits, radix)
+        .unwrap_or_else(|_| panic!("整数字面量超出 i64 范围: {raw}"))
 }
 
 /// 运算符 / 分隔符的 Rule → TokenKind 映射。
