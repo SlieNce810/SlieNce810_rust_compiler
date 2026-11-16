@@ -46,26 +46,3 @@ pub fn tokenize(input: &str) -> Vec<Token> {
     }).collect()
 }
 
-fn parse_expreession(tokens: &mut std::iter::Peekable<std::vec::IntoIter<Token>>) -> Result<Node, String>{
-    let mut left = parse_term(tokens)?;
-
-    while let Some(op) = tokens.peek() {
-        match op {
-            Token::Operator('+') | Toekn::Operator('_') => {
-                let op = if let Token::Operator(op) = tokens.next().unwrap() {
-                    op
-                } else {
-                    unreachable!()
-                };
-                let right = parse_term(tokens)?;
-                left = Node::BinaryOp {
-                    left: Box::new(left),
-                    operator: op,
-                    right: Box::new(right),
-                };
-            }
-            _ => break,
-        }
-    }
-    Ok(left)
-}

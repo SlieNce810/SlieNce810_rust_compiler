@@ -30,22 +30,61 @@ pub fn parse(tokens: Vec<Token>) -> Result<Node, String> {
 }
 
 /// expression := term (('+' | '-') term)*
-fn parse_expression(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node, String> {
-    // TODO(lab0): 先 parse_term 拿左值，再循环消费 '+'/'-' 折叠成左结合树
-    let _ = tokens;
-    todo!("实现 parse_expression")
+fn parse_expreession(tokens: &mut std::iter::Peekable<std::vec::IntoIter<Token>>) -> Result<Node, String>{
+    let mut left = parse_term(tokens)?;
+
+    while let Some(op) = tokens.peek() {
+        match op {
+            Token::Operator('+') | Toekn::Operator('_') => {
+                let op = if let Token::Operator(op) = tokens.next().unwrap() {
+                    op
+                } else {
+                    unreachable!()
+                };
+                let right = parse_term(tokens)?;
+                left = Node::BinaryOp {
+                    left: Box::new(left),
+                    operator: op,
+                    right: Box::new(right),
+                };
+            }
+            _ => break,
+        }
+    }
+    Ok(left)
 }
+
 
 /// term := factor (('*' | '/') factor)*
 fn parse_term(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node, String> {
     // TODO(lab0): 同上，但只处理 '*' 和 '/'
-    let _ = tokens;
-    todo!("实现 parse_term")
+    let mut left = parse_factor(tokens)?;
+    while let Some(op) = tokens.peek() {
+        match op {
+            Token::Operator('*') | Token::Operator('/') => {
+                let op = if let Token::Operator(op) = tokens.next().unwrap() {
+                    op
+                } else {
+                    unreachable!()
+                };
+                let right = parse_factor(tokens)?;
+                left = Node::BinaryOp { 
+                    left: Box::new(left), 
+                    operator: op, 
+                    right: Box::new(right) 
+                };
+            }
+            _ => break,
+        }
+    }
+    Ok(left)
 }
 
 /// factor := INTEGER
 fn parse_factor(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node, String> {
     // TODO(lab0): 期望下一个 Token 是 Integer，否则返回 Err("Expected integer")
-    let _ = tokens;
-    todo!("实现 parse_factor")
+    match tokens.next() {
+        Some(Token::Integer(value)) => Ok(Node::Number(value)),
+        _ => Err("Expected integer".to_string()),
+    }
 }
