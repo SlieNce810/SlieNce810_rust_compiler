@@ -1,0 +1,15 @@
+[package]
+name = "compiler"
+version = "0.1.0"
+edition = "2021"
+
+# OJ 评测脚本按 `compiler` 这个名字跑二进制，package.name 不能改。
+# edition 用 2021 而不是 2024：OJ 上的 rustc 版本未知，2021 兼容面更宽。
+
+[dependencies]
+pest = "2.5"
+pest_derive = "2.5"
+
+[profile.release]
+# OJ 只跑一次，release 编译能省点时间；debug 也行，不强制。
+opt-level = 2

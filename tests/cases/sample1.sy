@@ -1,0 +1,8 @@
+int main()
+{
+// line comment
+/* block comment
+   block comment part 2 */
+
+int i = 0x1;
+}

@@ -1,0 +1,9 @@
+INT int at Line 1.
+IDENT main at Line 1.
+L_PAREN ( at Line 1.
+R_PAREN ) at Line 1.
+L_BRACE { at Line 1.
+RETURN return at Line 1.
+INTEGER_CONST 0 at Line 1.
+SEMICOLON ; at Line 1.
+R_BRACE } at Line 1.

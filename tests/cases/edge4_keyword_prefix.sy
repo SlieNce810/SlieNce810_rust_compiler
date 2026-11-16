@@ -1,0 +1,12 @@
+int main()
+{
+    int intx = 1;
+    int iffy = 2;
+    int returns = 3;
+    int whiles = 4;
+    int elsex = 5;
+    int consty = 6;
+    int voidz = 7;
+    int breaks = 8;
+    int continues = 9;
+}
