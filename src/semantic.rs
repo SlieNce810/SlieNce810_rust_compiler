@@ -15,6 +15,17 @@ use crate::parser::Node;
 ///       本 Lab 不要求检测常量折叠后的除零。
 pub fn check_semantics(node: &Node) -> Result<(), String> {
     // TODO(lab0): 递归 + 除零判断
-    let _ = node;
-    todo!("实现 check_semantics")
+    match node {
+        Node::Number(_) => Ok(()),
+        Node::BinaryOp { left, operator, right } => {
+            check_semantics(left)?;
+            check_semantics(right)?;
+            if *operator == '/' {
+                if let Node::Number(0) = **right {
+                    return Err("Division by zero".to_string());
+                }
+            }
+            Ok(())
+        }
+    }
 }
