@@ -3,8 +3,10 @@
 //! 讲义做法：先建立模块 `main: float ()`，再用 Builder 在 entry 基本块里
 //! 逐条折叠出加减乘除指令，最后在主函数里 `ret` 该值。
 
+use std::ffi::CString;
+
 use crate::parser::Node;
-use llvm_sys::{core::{LLVMConstReal, LLVMCreateBuilderInContext, LLVMDisposeBuilder, LLVMFloatTypeInContext, LLVMGetFirstBasicBlock, LLVMGetFirstFunction}, prelude::{LLVMContextRef, LLVMModuleRef, LLVMValueRef}};
+use llvm_sys::{core::{LLVMBuildFAdd, LLVMBuildFDiv, LLVMBuildFMul, LLVMBuildFSub, LLVMConstReal, LLVMCreateBuilderInContext, LLVMDisposeBuilder, LLVMFloatTypeInContext, LLVMGetFirstBasicBlock, LLVMGetFirstFunction, LLVMPositionBuilderAtEnd}, prelude::{LLVMContextRef, LLVMModuleRef, LLVMValueRef}};
 
 /// 递归生成表达式对应的 LLVM 值。
 ///
@@ -36,15 +38,20 @@ pub fn generate_llvm_ir(
             let right_val = generate_llvm_ir(right, module, context);
             let builder = LLVMCreateBuilderInContext(context);
 
-            // 获取第一个基本块
+            // 新 builder 没有插入点，不定位直接建指令会让 LLVM 内部断言失败
             let first_function = LLVMGetFirstFunction(module);
             let first_basic_block = LLVMGetFirstBasicBlock(first_function);
-            let result = match *operation {
+            LLVMPositionBuilderAtEnd(builder, first_basic_block);
+
+            // 名字只是让 IR 好读；同名 LLVM 会自动加序号
+            let name = CString::new("tmp").unwrap();
+
+            let result = match *operator {
                 '+' => LLVMBuildFAdd(builder, left_val, right_val, name.as_ptr()),
                 '-' => LLVMBuildFSub(builder, left_val, right_val, name.as_ptr()),
                 '*' => LLVMBuildFMul(builder, left_val, right_val, name.as_ptr()),
                 '/' => LLVMBuildFDiv(builder, left_val, right_val, name.as_ptr()),
-                _ => unreachable!("parser 只会产出这四种运算符"),
+                _ => unreachable!("parser 只产出这四种运算符"),
             };
             LLVMDisposeBuilder(builder);
             result

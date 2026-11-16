@@ -14,7 +14,7 @@ mod semantic;
 
 use std::{ffi::CString, fs, ptr};
 
-use llvm_sys::core::{LLVMAddFunction, LLVMAppendBasicBlockInContext, LLVMBuildRet, LLVMContextCreate, LLVMContextDispose, LLVMCreateBasicBlockInContext, LLVMCreateBuilder, LLVMCreateBuilderInContext, LLVMDisposeBuilder, LLVMDisposeMessage, LLVMDisposeModule, LLVMFloatTypeInContext, LLVMFunctionType, LLVMModuleCreateWithNameInContext, LLVMPositionBuilderAtEnd, LLVMPrintModuleToString};
+use llvm_sys::core::{LLVMAddFunction, LLVMAppendBasicBlockInContext, LLVMBuildRet, LLVMContextCreate, LLVMContextDispose, LLVMCreateBuilderInContext, LLVMDisposeBuilder, LLVMDisposeMessage, LLVMDisposeModule, LLVMFloatTypeInContext, LLVMFunctionType, LLVMModuleCreateWithNameInContext, LLVMPositionBuilderAtEnd, LLVMPrintModuleToString};
 
 fn main() {
     // 1. 读取输入文件（内容形如 1+1）
@@ -81,7 +81,7 @@ fn main() {
         LLVMPrintModuleToString(module)
     };
     let ir_output = unsafe {
-        std::ffi::from_ptr(ir_string)
+        std::ffi::CStr::from_ptr(ir_string)
     }.to_string_lossy();
     println!("{}", ir_output);
 

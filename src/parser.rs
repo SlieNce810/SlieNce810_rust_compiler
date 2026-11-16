@@ -30,12 +30,12 @@ pub fn parse(tokens: Vec<Token>) -> Result<Node, String> {
 }
 
 /// expression := term (('+' | '-') term)*
-fn parse_expreession(tokens: &mut std::iter::Peekable<std::vec::IntoIter<Token>>) -> Result<Node, String>{
+fn parse_expression(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node, String> {
     let mut left = parse_term(tokens)?;
 
     while let Some(op) = tokens.peek() {
         match op {
-            Token::Operator('+') | Toekn::Operator('_') => {
+            Token::Operator('+') | Token::Operator('-') => {
                 let op = if let Token::Operator(op) = tokens.next().unwrap() {
                     op
                 } else {
